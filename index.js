@@ -1,5 +1,8 @@
+import logger from 'morgan';
 import app from './app';
 
-app.listen(3001, () => {
-  console.log('Listening on 3001');
+app.use(logger);
+
+app.listen(3001, () => { 
+  console.log('Listening on 3001'); 
 });

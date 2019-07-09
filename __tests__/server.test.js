@@ -1,5 +1,5 @@
-const request = require('supertest');
-const app = require('../app');
+import request from 'supertest';
+import app from '../app';
 
 test('GET method should respond with 200', async () => {
   const response = await request(app).get('/');
