@@ -1,59 +1,51 @@
 import db from "./db";
 
-const createUser = (request, response) => {
-  const { email, password } = request.body;
+const getAllUsers = async () => {
+  const results = await db.query("SELECT * FROM USERS")
+    .then(result => result.rows)
+    .catch(err => { throw err });
 
-  db.query(
-    "INSERT INTO users (email, password) VALUES ($1, $2)",
-    [email, password],
-    (err, result) => {
-      if (err) {
-        response.status(500);
-      }
-
-      response.status(200).send(`User added with ID: ${result.insertId}`);
-    }
-  );
+  return results;
 };
 
-const deleteUser = (request, response) => {
-  const { params } = request || {};
-  const { id } = params || {};
+const getUserByEmail = async (email) => {
+  const results = await db.query("SELECT * FROM USERS WHERE email=$1", [email])
+    .then(result => result.rows[0])
+    .catch(err => { throw err });
 
-  db.query("DELETE FROM users WHERE id = $1", [id], err => {
-    if (err) {
-      response.status(500);
-    }
-
-    response.status(200).send(`User deleted with ID: ${id}`);
-  });
-};
-
-const getAllUsers = (request, response) => {
-  db.query("SELECT * FROM user ORDER BY id ASC", (err, results) => {
-    if (err) {
-      response.status(500).json({rows: []});
-    }
-
-    response.status(200).json(results.rows);
-  });
-};
-
-const getUserById = (request, response) => {
-  const { params } = request || {};
-  const { id } = params || {};
-
-  db.query('SELECT * FROM users WHERE id = $1', [id], (err, results) => {
-    if(err){
-      response.status(500).json({});
-    }
-
-    response.status(200).json(results.rows);
-  }
+  return results;
 }
 
+const getUserById = async (id) => {
+  const results = await db.query("SELECT * FROM USERS WHERE user_id=$1", [id])
+    .then(result => result.rows)
+    .catch( err => { throw err });
+
+  return results.length === 1 ? results[0] : {};
+};
+
+
+const deleteUserById = async (id) => {
+  await db.query("DELETE FROM USERS WHERE user_id = $1", [id]).catch(err => { throw err });
+
+  return { data: `User ${id} deleted` }
+};
+
+const createUser = async (user) => {
+  const { email, password } = user;
+
+  const date = await db.query('SELECT NOW()').then(res => res.rows[0]);
+  const results = await db.query(`INSERT INTO USERS(email, password, created_on) VALUES($1, $2, $3) RETURNING user_id`, [email, password, date.now])
+    .then(res => res.rows[0])
+    .catch(err =>{ throw err });
+
+  return results;
+};
+
 export default {
-  createUser,
-  deleteUser,
-  getAllUsers
+  getAllUsers,
+  getUserById,
+  getUserByEmail,
+  deleteUserById,
+  createUser
 };

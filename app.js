@@ -2,16 +2,15 @@ import express from 'express';
 import morgan from 'morgan';
 import bodyParser from 'body-parser';
 
+import Routes from './controllers';
+
 const app = express();
 
-app.use(morgan);
+app.use(morgan('tiny'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true,
 }));
-
-app.get('/', (req, res) => {
-  res.status(200).send('Up and running');
-});
+app.use('/api', Routes);
 
 export default app;
