@@ -1,8 +1,11 @@
+import request from 'supertest';
 import { db, Users } from "../models";
+import app from '../app';
+
 
 describe("User Model Tests", () => {
   afterAll(async () => {
-    await db.query('DELETE FROM USERS').catch(err => { throw err});
+    await db.query('DELETE FROM USERS WHERE user_id < 10').catch(err => { throw err});
     await db.query('ALTER SEQUENCE users_user_id_seq RESTART').catch(err => { throw err});
     await db.query('UPDATE users SET user_id = DEFAULT').catch(err => { throw err});
   });
@@ -45,4 +48,28 @@ describe("User Model Tests", () => {
 
     expect(res.length).toEqual(0);
   });
+});
+
+describe("User Routes Tests", () => {
+  afterAll(async () => {
+    await db.query('DELETE FROM USERS WHERE user_id < 10').catch(err => { throw err});
+    await db.query('ALTER SEQUENCE users_user_id_seq RESTART').catch(err => { throw err});
+    await db.query('UPDATE users SET user_id = DEFAULT').catch(err => { throw err});
+  });
+  
+  test("POST /users", async () => {
+    const response = await request(app)
+      .post('/api/users')
+      .send({email: 'test@test.com', password: '1234'});
+
+    expect(response.status).toEqual(200);
+    expect(response.body.id).toEqual(1);
+  })
+
+  test("GET /users", async () => {
+    const response = await request(app).get('/api/users');
+
+    expect(response.status).toEqual(200);
+    expect(response.body.length).toEqual(1);
+  })
 });
