@@ -72,4 +72,25 @@ describe("User Routes Tests", () => {
     expect(response.status).toEqual(200);
     expect(response.body.length).toEqual(1);
   })
+
+  test("GET /users/:id", async () => {
+    const response = await request(app).get('/api/users/1');
+
+    expect(response.status).toEqual(200);
+    expect(response.body.user_id).toEqual(1);
+    expect(response.body.email).toEqual('test@test.com');
+
+    const errResponse = await request(app).get('/api/users/123');
+    expect(errResponse.status).toEqual(500);
+  });
+
+  test("POST /users/:id", async () => {
+    const response = await request(app).post('/api/users/1');
+
+    expect(response.status).toEqual(200);
+    expect(response.body.message).toEqual('User 1 deleted');
+
+    const errResponse = await request(app).post('/api/users/123');
+    expect(errResponse.status).toEqual(500);
+  });
 });

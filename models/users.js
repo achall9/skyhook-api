@@ -18,15 +18,15 @@ const getUserByEmail = async (email) => {
 
 const getUserById = async (id) => {
   const results = await db.query("SELECT * FROM USERS WHERE user_id=$1", [id])
-    .then(result => result.rows)
+    .then(result => result.rows[0])
     .catch( err => { throw err });
 
-  return results.length === 1 ? results[0] : {};
+  return results;
 };
 
 
 const deleteUserById = async (id) => {
-  await db.query("DELETE FROM USERS WHERE user_id = $1", [id]).catch(err => { throw err });
+  await db.query("DELETE FROM USERS WHERE user_id = $1 RETURNING *", [id]).catch(err => { throw err });
 
   return { data: `User ${id} deleted` }
 };

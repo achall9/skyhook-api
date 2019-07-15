@@ -35,6 +35,41 @@ router.get('/', async (req, res) => {
   res.status(200).send(users);
 });
 
-router.get('/:id', Users.getUserById);
+router.get('/:id', async (req, res) => {
+  const { params } = req;
+  const { id } = params || {};
+
+  const user = await Users.getUserById(id)
+    .catch(err => {
+      throw err;
+    });
+
+  if(!user){
+    res.status(500).send({message: "User not found"});
+  }
+
+  res.status(200).send(user);
+});
+
+router.post('/:id', async (req, res) => {
+  const { params } = req;
+  const { id } = params || {};
+
+  const user = await Users.getUserById(id)
+    .catch(err => {
+      res.status(500).send({message: "User not found"});
+      throw err;
+    });
+
+  if(user) {
+    await Users.deleteUserById(id)
+      .catch(err => { 
+        throw err;
+      });
+    res.status(200).send({message: `User ${id} deleted`});
+  } else {
+    res.status(500).send({message: "User not found"});
+  }
+});
 
 export default router;
