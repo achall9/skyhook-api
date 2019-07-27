@@ -1,40 +1,38 @@
 import { Router } from 'express';
-import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import bcrypt from 'bcrypt';
 
-import passport from '../middleware/passport';
-
-const router = new Router();
+import auth from '../middleware/auth';
+import { Users } from '../models';
 
 dotenv.config();
 
+const router = new Router();
+
 router.post('/login', async (req, res) => {
-  passport.authenticate('login', {session: false}, (err, user) => {
-    if(err || !user) {
-      return res.status(400).send({
-        message: 'Something sploded',
-        user
-      });
-    }
+  const { body } = req;
+  const { email, password } = body || {};
 
-    req.login(user, {session: false}, (err) => {
-      if(err) res.send(err);
+  try {
+    const user = await Users.getUserByEmail(email);
+  
+    if(!user) return res.status(401).send("Invalid Credentials");
 
-      const { user_id: id, email, created_on: createdOn } = user || {};
-      const userToken =  {
-        id,
-        email,
-        createdOn
-      };
+    const match = await bcrypt.compare(password, user.password);
+    
+    if(!match) return res.status(401).send("Invalid Credentials");
 
-      const token = jwt.sign(userToken, process.env.JWT_SECRET);
-      return res.json({user: userToken, token});
-    });
-  })(req, res);
+    const token = await auth.generateToken(email);
+
+    return res.status(200).send({token});
+
+  } catch(err) {
+    throw err;
+  }
 });
 
-router.get('/setup2fa', passport.authenticate('jwt', {session: false}), (req, res) => {
-  res.send({message: 'authenticated route'});
-})
+router.get('/test', auth.isAuthenticated, async(req, res) => {
+  res.send({ message: 'protected route' });
+});
 
 export default router;
