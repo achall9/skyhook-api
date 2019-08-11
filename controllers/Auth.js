@@ -12,27 +12,44 @@ const router = new Router();
 router.post('/login', async (req, res) => {
   const { body } = req;
   const { email, password } = body || {};
-
   try {
     const user = await Users.getUserByEmail(email);
-  
-    if(!user) return res.status(401).send("Invalid Credentials");
 
-    const match = await bcrypt.compare(password, user.password);
-    
-    if(!match) return res.status(401).send("Invalid Credentials");
+    if(!user) return res.sendStatus(501);
+    const match = await bcrypt.compareSync(password, user.password);
 
-    const token = await auth.generateToken(email);
+    if(!match) return res.sendStatus(501);
 
-    return res.status(200).send({token});
+    const token = await auth.generateToken(user);
 
-  } catch(err) {
-    throw err;
+    return res.json({token});
+  }catch (error) {
+    return res.sendStatus(500).json(error);
   }
 });
 
+router.post('/register', async (req, res) => {
+  const { body } = req;
+  const { email, password } = body || {};
+
+  await bcrypt.hash(password, 10, async (err, hash) => {
+    if(err) {
+      res.status(500).send(err);
+      throw err;
+    }
+
+    const user = { email, password: hash };
+
+    await Users.createUser(user).then(response => {
+      const { user_id: userId } = response || {};
+
+      res.status(200).send({id: userId});
+    })
+  })
+});
+
 router.get('/test', auth.isAuthenticated, async(req, res) => {
-  res.send({ message: 'protected route' });
+  res.status(200).send({ message: 'protected route' });
 });
 
 export default router;

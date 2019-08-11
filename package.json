@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.js --exec babel-node"
+    "test:watchAll": "jest --watchAll",
+    "test": "jest",
+    "dev": "nodemon index.js --exec babel-node"
   },
   "repository": {
     "type": "git",

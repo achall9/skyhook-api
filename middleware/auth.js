@@ -1,8 +1,6 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
-import { Users } from '../models';
-
 dotenv.config();
 
 const isAuthenticated = (req, res, next) => {
@@ -19,20 +17,15 @@ const isAuthenticated = (req, res, next) => {
   }
 }
 
-const generateToken = async (userEmail) => {
-  try {
-    const user = await Users.getUserByEmail(userEmail);
-    if(!user) return null;
+const generateToken = async (user) => {
+  if(!user) return null;
 
-    const token = jwt.sign({
-      id: user.user_id, 
-      email: user.email, 
-      createdOn: user.createdOn
-    }, process.env.JWT_SECRET);
-    return token;
-  } catch(error) {
-    return error;
-  }
+  const token = jwt.sign({
+    id: user.user_id, 
+    email: user.email, 
+    createdOn: user.createdOn
+  }, process.env.JWT_SECRET);
+  return token;
 }
 
 export default { 
