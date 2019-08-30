@@ -32,7 +32,8 @@ const createUser = async (user) => {
   const { email, password } = user;
 
   const date = await db.query('SELECT NOW()').then(res => res.rows[0]);
-  const results = await db.query(`INSERT INTO USERS(email, password, created_on) VALUES($1, $2, $3) RETURNING user_id`, [email, password, date.now])
+  const results = await db.query(`INSERT INTO USERS(email, password, created_on) VALUES($1, $2, $3) RETURNING user_id`, 
+    [email, password, date.now])
     .then(res => res.rows[0])
 
   return results;
