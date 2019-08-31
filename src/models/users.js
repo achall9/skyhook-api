@@ -2,8 +2,7 @@ import db from "./db";
 
 const getAllUsers = async () => {
   const results = await db.query("SELECT * FROM USERS")
-    .then(result => result.rows)
-
+    .then(result => result.rows) 
   return results;
 };
 
